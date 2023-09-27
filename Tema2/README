@@ -1,0 +1,68 @@
+Task1
+    Am descompus matricea asociata imaginii cu ajutorul 
+functiei svd din Octave, astfel  [U, S, V] = svd(photo_double).
+Ulterior am 'decupat' aceste 3 matrice asa cum este descris
+in enuntul problemei. La final am recompus imaginea pe baza
+noilor matrice. In functie de k se observa o calitate 
+aproape la fel de buna ca cea a originalului cand k e destul
+de aproape de n si m si destul de rea cand k e din ce in ce
+mai mic.
+
+Task2
+    Am urmarit pasii descrisi in enuntul problemei. Scad media
+de pe fiecare linie din valorile de pe aceste linii. Construiesc
+matricea Z, determin SVD pentru Z, iar mai apoi extrag primele
+pcs coloane ale lui V pe care le pun in W. Determin proiectia 
+lui photo_double in spatiul componentelor principale - Y.
+Obtin new_X prin aproximatia matricei initiale. Aplicand
+acest tip de compresie, PCA, se observa ca pozele sunt comprimate
+altfel: diferenta principala consta in faptul ca SVD lucreaza
+direct cu matricea de pixeli a imaginii, in timp ce PCA transforma
+matricea de pixeli intr-un set de vectori de caracteristici. Prin
+SVD se retine informatia esentiala a imaginii, iar prin PCA se 
+retine variatia semnificativa a datelor in componentele principale.
+
+Task3
+    O alta implementare a task-ului 2, dar prin intermediul
+matricei de covarianta. Determin valorile si vectorii proprii
+ale matricei Z. Pun valorile proprii de pe diagonala principala
+a matricei S intr-un vector. Sortez vectorul folosind sortarea
+prin interschimbare, iar in timp ce dau swap la 2 valori proprii
+voi da swap si la cele 2 coloane din matricea ce contine vectorii
+proprii. La final actualizez matricea S cu valorile proprii 
+sortate in ordine descrescatoare. Urmatorii pasi sunt aceeasi 
+cu cei de la task-ul 2.
+
+Task4
+    function [train_mat, train_val] = prepare_data (name, no_train_images)
+Incarc datele in d si le extrag prin X si y asa cum este descris in
+enunt. Pun in train_mat doar primele no_train_images linii, iar in
+train_val primele no_train_images valori.
+    function im = visualise_image (train_mat, number)
+Extrag linia number din vectorul de imagini train_mat. Aceasta linie
+o convertesc intr-o matrice de 28x28 cu ajutorul functiei reshape.
+    function [train, miu, Y, Vk] = magic_with_pca (train_mat, pcs)
+Pasii sunt asemanatori cu cei de la task3. Initial am luat ideea
+de acolo(am copiat codul si l-am modificat, insa am observat ca este
+foarte ineficient, complexitatea ca timp era de ordinul N^2 de la 
+sortare si nu numai, am fi avut de facut cel putin 10^8 pasi), insa
+am modificat-o folosindu-ma de vectorizari. Media pe coloane am facut-o
+folosindu-ma de functia mean, astfel miu=mean(train_mat,1), '1' se refera
+sa faca media pe coloane. Valorile proprii le-am sortat cu ajutorul
+functiei sort care ne-a intors vectorul sortat, dar si un vector de
+indexi. Index ne va folosi la a sorta coloanele matricei vectorilor 
+proprii.
+    function sir = prepare_photo (im)
+Pentru un pixel x pentru a-i inversa culoarea este suficient sa facem
+255-x, rezulta ca pentru a inversa culorile imaginii putem face 255-im.
+Facem transpusa matricei im si o transformam intr-un vector linie.
+    function prediction = KNN (labels, Y, test, k)
+parametrul test va fi o imagine scrisa ca vector linie, adica
+test = prepare_photo(test), unde test este o imagine alb-negru 28x28.
+Distanta euclidiana dintre fiecare linie a lui Y si test este echivalenta
+cu a calcula norma vectorului Y(i)-test, unde Y(i)=linia i din Y. Sortam
+distantele tot cu ajutorul functiei sort si ne folosim de vectorul de
+indexi numit aici aux(pentru o intelegere mai buna am preluat numele
+de la hint).
+    function prediction = classifyImage (im, train_mat, train_val, pcs)
+Aplicam pasii descrisi in TODO.

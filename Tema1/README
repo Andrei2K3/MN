@@ -1,0 +1,192 @@
+-------------------------------------------------------------------------------
+Markov is coming ...
+
+Timp de implementare: 6 ore
+
+function [Labyrinth] = parse_labyrinth(file_path)
+    Prin intermediul acestei functii am pus datele din fisiserul file_path
+in matricea Labyrinth astfel: am citit tot fisiserul deodata prin intermediul
+functiei strsplit si am folosit ca separator pe '\n' pentru a-mi memora fiecare
+linie ca un element dintr-un vector de linii; am parcurs fiecare linie si mi-am
+pus ce ma interesa in matrice.
+
+function [Adj] = get_adjacency_matrix(Labyrinth)
+    Determin matricea de adiacenta aferenta grafului din datele problemei.
+Avem n*m+2 noduri, unde n si m sunt dimensiunile matricei Labyrinth, iar
+acel "+2" vine de la nodurile WIN si LOSE.
+    Fiecarui nod din matricea Labyrinth ii corespunde pozitia (i-1)*m+j
+in matricea Adj conform numaratorii din cerinta problemei si anume:
+                        |1|2|3|
+                        |4|5|6|
+                        |7|8|9|
+    Ne mai ramane sa vedem cu ce vecini se invecineaza fiecare nod, iar acest
+lucru este mult mai bine explicat in cod.
+    Ne mai ramane sa punem ca WIN se invecineaza cu WIN si LOSE cu LOSE.
+
+function [Link] = get_link_matrix(Labyrinth)
+    Valorile fiecarei linii i reprezinta nodurile cu care se invecineaza
+nodul i(daca pentru coloana j avem 1, inseamna ca i -> j).
+    Prin urmare vom numara cati de 1 avem pe fiecare linie(fie aceasta
+valoare count), iar in pozitiile in care am gasit 1 in matricea de adiacenta
+vom pune 1/count in matricea Link(conform cerintei problemei).
+
+function [G, c] = get_Jacobi_parameters(Link)
+    G si c vor reprezenta aceste zone din matricea Link
+    n si m sunt dimensiunile lui Labyrinth
+                                WIN   LOSE
+             1 2 3 4 ... n*m   n*m+1  n*m+2
+           ------------------------------     
+       1   |                 |       |
+       2   |                 |       |
+       3   |                 |       |
+       4   |       G         |   c   |
+      ...  |                 |       |
+      n*m  |                 |       |
+           |-----------------------------
+WIN  n*m+1 |
+LOSE n*m+2 | 
+
+function [x, err, steps] = perform_iterative(G, c, x0, tol, max_steps)
+    Am prelucrat formula din problema p=Gp+c, care devine in cazul nostru
+x(k+1)=G*x(k)+c, x(k)=reprezinta x la pasul k.
+    Pentru a eficientiza am considerat x(k)=x1, iar x(k+1)=x2.
+    Am iterat cu i pana la max_steps, dar am tinut cont si de situatia
+in care se ajunge ca err <= tol, caz in care iesim fortat cu break din for.
+
+function [path] = heuristic_greedy(start_position, probabilities, Adj)
+    Am transformat pseudocodul din enunt in cod GNU Octave.
+Am implementat iterativ DFS ul => path este si stiva DFS ului.
+
+function [decoded_path] = decode_path(path, lines, cols)
+    Datele le retin intr o matrice cu n-1 linii (nu ma intereseaza
+a n-a valoare din path) si 2 coloane pentru perechea (x,y).
+    Spre intelegere luam urmatoarul exemplu:
+     1  2  3
+     4  5  6
+     7  8  9
+    10 11 12
+    Distingem doua cazuri:
+-linia si coloana pe care se afla elementul 5 sunt date de:
+l = 5/3 + 1 = 5/nr_coloane + 1 = 2 (5 nu se divide la 3)
+c = 5 - 1*3 = 5 - (l-1)*nr_coloane = 2
+-linia si coloana pe care se afla elementul 9 sunt date de:
+l = 9/3 = 9/nr_coloane = 3 (9 se divide la 3)
+c = 9 - (l-1)*nr_coloane = 3
+    Aceste cazuri sunt tratate in problema.
+
+
+-------------------------------------------------------------------------------
+Linear Regression
+
+Timp de implementare: 8 ore
+
+function [Y, InitialMatrix] = parse_data_set_file(file_path)
+    Prin intermediul acestei functii am pus datele din fisiserul file_path
+in vectorul coloana Y si matricea InitialMatrix astfel: am deschis fisiserul;
+am citit m si n; am initializat Y ca vector coloana (mx1); am initializat
+InitialMatrix ca o matrice de tip cell de mxn elemente; am citit liniile
+in urmatorul fel: prima data l-am citit pe Y(i) apoi cu textscan restul elementelor
+de pe acea linie ca stringuri, urmand sa le punem in InitialMatrix.
+
+function [FeatureMatrix] = prepare_for_regression(InitialMatrix)
+    Convertim matricea InitialMatrix, alcatuita din tipul de data cell, in 
+FeatureMatrix, alcatuita din numare reale. Pentru a initializa matricea
+FeatureMatrix avem in vedere urmatorul lucru: am luat cazul defavorabil cand 
+fiecare element e string, ce implica doua inserari in noua matrice => 2*m coloane.
+Deci va fi de dimensiuni nx2m.
+    Parcurgem matricea InitialMatrix element cu element si facem modificarile
+necesare in FeatureMatrix.
+
+function [Error] = linear_regression_cost_function(Theta, Y, FeatureMatrix)
+    Am implementat urmatoarea functia de cost din problema si anume
+J(Theta)=J(theta0,theta1,...,thetan)=1/2m * sum((h_theta(x(i))-y(i))^2), i=1:m 
+In solutia I am facut efectiv aceste iteratii, iar in cea de a doua solutie
+m-am folosit de faptul ca h_theta(x(i))-y(i) , i=1:m este de fapt 
+FeatureMatrix*Theta(2:n+1)-Y, iar aceasta scriere se executa mult mai repede
+in GNU Octave, fiind un limbaj vectorizat.
+    Am avut in vedere faptul ca Theta are n+1 coloane continand theta0(=0),theta1,...
+thatan si din acest motiv am facut FeatureMatrix*Theta(2:n+1).
+
+function [Y, InitialMatrix] = parse_csv_file(file_path)
+    Citim deodata tot fisierul cu dlmread, insa de la linia 1, coloana 0(cu alte
+cuvinte dam skip la prima linie), iar aceasta informatie este memorata in 'data'
+ca o matrice. Problema este ca dlmread returneaza o matrice numerica, iar noi 
+avem in matrice si elemente stringuri. Din acest motiv la acest prim pas memoram
+doar dimensiunile matricei. Acum redeschidem fisierul si vom citi linie cu linie
+toate elementele viitoarei matrici ca stringuri pe care le vom pune in aceasta
+matrice de tip cell. Pentru Y citim valoarea la inceput de rand direct ca numar real.
+    Pe scurt: citim fisierul in doua moduri diferite, prima data aflam dimensiunile
+matricei si vectorului, a doua oara punem valorile in vector si matrice.
+
+function [Theta] = gradient_descent(FeatureMatrix, Y, n, m, alpha, iter)
+     Am implementat gradientul functiei de cost din problema si anume
+...=1/m * sum((h_theta(x(i))-y(i)))x_j(i), i=1:m , insa m-am folosit iar 
+de faptul ca h_theta(x(i))-y(i) , i=1:m este de fapt FeatureMatrix*Theta(2:n+1)-Y,
+iar dupa acest pas am luat fiecare element din rezultatul acestei operatii si l-am 
+inmultit cu x_j(i), i=1:m.
+    Acum urmeaza Theta_j=Theta_j-alpha*(dJ/dTheta_j(Theta)) care este scris
+mai explicit in cod.
+
+function [Theta] = normal_equation(FeaturesMatrix, Y, tol, iter)
+    Un sistem Ax=b unde A nu este matrice patratica se poate transforma astfel
+A'Ax=A'b intr-un sistem cu B=A'A matrice patratica. Acest lucru ne intereseaza,
+deoarce o matrice care este pozitiv definita implica sa aiba toate valorile
+proprii > 0, iar valori proprii au doar matricele patratice.
+    In rezolvare am tradus pseudocodul din cerinta problemei in cod GNU Octave.
+Spre usurarea scrierii codului Theta_0 memoreaza vectorul coloana alcatuit din 
+Theta1; Theta2; Theta3; ...; Thetan , iar la final am Theta = [0; Theta_0] = 
+[Theta0; Theta1; Theta2; Theta3; ...; Thetan].
+    
+function [Error] = lasso_regression_cost_function(Theta, Y, FeMatrix, lambda)
+    Am implementat L1(Lasso Regression) dupa formula data in problema:
+J_L1(Theta)=1/m * sum((y(i)-h_theta(x(i)))^2) + lambda * norm(Theta,1), i=1:m 
+
+function [Error] = ridge_regression_cost_function(Theta, Y, FeMatrix, lambda)
+    Am implementat L2(Ridge Regression) dupa formula data in problema:
+J_L1(Theta)=1/2m * sum((h_theta(x(i))-y(i))^2) + lambda * sum(theta_j^2)
+                        i=1:m                               j=1,n 
+
+
+-------------------------------------------------------------------------------
+MNIST 101
+
+Timp de implementare: 5 ore
+
+Mi-am construit functia auxiliara sigmoidderivat returneaza functia sigmoid 
+derivata si anume σ′(x) = σ(x)·(1 − σ(x)).
+
+function [X, y] = load_dataset(path)
+    Punem pe information sa retina informatiile din load(path). Acesta este
+un element intermediar pentru a ajunge la information.y si information.X 
+
+function [X_train, y_train, X_test, y_test] = split_dataset(X, y, percent)
+    poz_train = floor(n * percent); 
+    In aceasta linie de cod am pus floor pentru a evita situatiile de genul
+n * 0.66 care ne da va un numar care nu este natural.
+    Am folosit functia randperm pentru a obtine o permutare random a
+permutarii identitate, iar aceasta permutare noua obtinuta am memorat-o in 
+vectorul index. Primele poz elemente le-am pus in X_train si y_train, iar
+restul in X_test si y_test, aceste mutari realizandu-se prin index(i).
+
+function [matrix] = initialize_weights(L_prev, L_next)
+    Calculam epsilon_0 dupa formula din cerinta problemei
+epsilon_0=sqrt(6)/sqrt(L_prev+L_next).
+    matrix are dimensiunile (L_next)x(L_prev+1) si ia valori random din 
+intervalul (-eps,eps). Pentru a face acest lucru folosim functia rand care
+returneaza valori insa din intervalul (0,1). Pentru a transforma (0,1) intr-un 
+interval (a,b) folosim formula evidenta a+(b-a)*(0,1)  (a se intelege ca (0,1)
+e interval).
+
+function [J, grad] = cost_function(params, X, y, lambda, input_layer_size,
+hidden_layer_size, output_layer_size)
+    Am reconstruit matricele Theta1 si Theta2, am aplicat Forward Propagation,
+creez matricea asociata lui y, il calculez si pe J cu formulele din problema,
+am facut un Back Propagation, am calculat gradientii si am construit vectorul
+solutie cerut de acest task. Am modificat putin formulele din problema
+(unele relatii le-am transpus pentru o mai buna intelegere) pentru a scrie vectorizat
+si mai clean codul, altfel nu luam punctaj maxim pe testele de 
+la functia predict_classes.
+
+function [classes] = predict_classes(X, weights, input_layer_size,
+hidden_layer_size, output_layer_size)
+    Aplic Forward Propagation asa cum este descris in enuntul problemei.
